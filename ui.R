@@ -22,6 +22,8 @@
                  tabName = "providerDashboardTab"),
         # menuItem("CoC Competition",
         #          tabName = "cocCompetitionTab"),
+        menuItem("Coordinated Entry Access Points",
+                 tabName = "ceAPs"),
         menuItem("Covid-19 Analysis",
                  tabName = "covid19Tab"),
         menuItem("Bed and Unit Utilization",
@@ -54,7 +56,7 @@
         "<br>&emsp;Data last refreshed:&emsp;<br>&emsp;",
         format(update_date, "%m-%d-%Y %I:%M %p", tz = "US/Eastern")
         ,
-              "<p><p>&emsp;Wear your mask! Be well."
+              "<p><p>&emsp;Be well, take care of each other."
       ))
     ),
     dashboardBody(
@@ -80,6 +82,75 @@
                     uiOutput("CurrentlyAwaitingPH")
                   )
                 )), 
+        tabItem(
+          tabName = "ceAPs",
+          tabsetPanel(
+            type = "tabs",
+            tabPanel("By County", 
+                     fluidRow(box(pickerInput(
+                       inputId = "ap_by_county",
+                       label = "Select County/-ies",
+                       options = pickerOptions(dropupAuto = FALSE,
+                                               actionsBox = TRUE),
+                       choices = bos_counties,
+                       multiple = TRUE
+                     ))),
+                     fluidRow(box(
+                       title = "Coordinated Entry Access Points",
+                       width = 12,
+                       dataTableOutput("AP_list_county")
+                       ))
+                     ),
+            tabPanel("By Homeless Planning Region", 
+                     fluidRow(box(pickerInput(
+                       inputId = "ap_by_region",
+                       label = "Select Service Area",
+                       options = pickerOptions(dropupAuto = FALSE,
+                                               actionsBox = TRUE),
+                       choices = choices_service_areas,
+                       multiple = TRUE)
+                     )),
+                     fluidRow(box(
+                       title = "Coordinated Entry Access Points",
+                       width = 12,
+                       dataTableOutput("AP_list_region"))
+                     )),
+            tabPanel("By Organization", 
+                     fluidRow(box(pickerInput(
+                       inputId = "ap_by_org",
+                       label = "Select Organization",
+                       selected = NULL,
+                       options = pickerOptions(dropupAuto = FALSE,
+                                               actionsBox = TRUE),
+                       multiple = TRUE,
+                       choices = APs %>% 
+                         arrange(OrganizationName) %>%
+                         pull(OrganizationName) %>% 
+                         unique()
+                     ))),
+                     fluidRow(box(
+                       title = "Coordinated Entry Access Points",
+                       width = 12,
+                       dataTableOutput("AP_list_org")))
+                     )
+          ),
+          fluidRow(box(
+            title = "Ohio Balance of State CoC Homeless Planning Regions",
+            HTML("The solid-colored counties are all part of the Ohio
+                       Balance of State CoC. The Ohio Development Services 
+                       Agency (ODSA) further divided the counties in the Balance
+                       of State into 17 Homeless Planning Regions to make
+                       implementation of state-funded programs in the Balance of
+                       State more localized."),
+            img(
+              src =
+                "Homeless-Region-Map-for-COHHIO-2017.png",
+              height = '100%',
+              width = '100%'
+            ),
+            width = 12
+          )),
+        ),
         tabItem(
           tabName = "covid19Tab",
           fluidRow(box(htmlOutput("headerCovid19"), width = 12)),

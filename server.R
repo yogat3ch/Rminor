@@ -90,24 +90,7 @@ function(input, output, session) {
         pull(ProjectType)
 
       summary_pe_final_scoring <- summary_pe_final_scoring %>%
-        mutate(
-          ExitsToPHMath = str_replace(ExitsToPHMath, "/", "÷"),
-          OwnHousingMath = str_replace(OwnHousingMath, "/", "÷"),
-          IncreasedIncomeMath = str_replace(IncreasedIncomeMath, "/", "÷"),
-          BenefitsAtExitMath = str_replace(BenefitsAtExitMath, "/", "÷"),
-          AverageLoSMath = str_replace(AverageLoSMath, "/", "÷"),
-          LHResPriorMath = str_replace(LHResPriorMath, "/", "÷"),
-          NoIncomeAtEntryMath = str_replace(NoIncomeAtEntryMath, "/", "÷"),
-          MedianHHIMath = str_replace(MedianHHIMath, "/", "÷"),
-          LongTermHomelessMath = str_replace(LongTermHomelessMath, "/", "÷"),
-          ScoredAtEntryMath = str_replace(ScoredAtEntryMath, "/", "÷"),
-          DQMath = str_replace(DQMath, "/", "÷"),
-          CostPerExitMath = str_replace(CostPerExitMath, "/", "÷"),
-          HousingFirstMath = str_replace(HousingFirstMath, "/", "÷"),
-          ChronicPrioritizationMath = str_replace(ChronicPrioritizationMath, "/", "÷"),
-          OnTrackSpendingMath = str_replace(OnTrackSpendingMath, "/", "÷"),
-          UnspentFundsMath = str_replace(UnspentFundsMath, "/", "÷")
-        )
+        mutate_at(vars(ends_with("Math")), ~str_replace(., "/", "÷"))
 
       a <- summary_pe_final_scoring %>%
         filter(AltProjectName == input$pe_provider) %>%
@@ -609,6 +592,105 @@ function(input, output, session) {
     }
     
   })
+  
+  
+output$AP_list_county <- renderDataTable({
+  AP_list <- APs %>%
+    filter(ProjectCountyServed %in% c(input$ap_by_county)) %>%
+    select(ProjectID) %>% unique()
+  
+  AP_final <- APs %>%
+    right_join(AP_list, by = "ProjectID") %>%
+    mutate(Address = if_else(!is.na(CoCCode),
+                             paste(Addresses, City, sep = '<br>'),
+                             "Please call- address not available.")) %>%    
+    group_by(OrgLink,
+             Address,
+             ProjectHours,
+             ProjectTelNo) %>%
+    summarise(Regions = paste(unique(ProjectAreaServed), collapse = ",<br>")) %>%
+    ungroup() %>%
+    unique() %>%
+    select(
+      "Organization" = OrgLink,
+      Address,
+      "Hours" = ProjectHours,
+      "Phone" = ProjectTelNo,
+      "Service Area(s)" = Regions
+    )
+  
+  datatable(AP_final,
+            rownames = FALSE,
+            options = list(dom = 'ltpi'),
+            escape = FALSE)
+  
+})
+  
+output$AP_list_region <- renderDataTable({
+  AP_list <- APs %>%
+    filter(ProjectAreaServed %in% c(input$ap_by_region)) %>%
+    select(ProjectID) %>% unique()
+  
+  AP_final <- APs %>%
+    right_join(AP_list, by = "ProjectID") %>%
+    mutate(Address = if_else(!is.na(CoCCode),
+                             paste(Addresses, City, sep = '</br>'),
+                             "Please call- address not available.")) %>%
+    group_by(OrgLink,
+             Address,
+             ProjectHours,
+             ProjectTelNo) %>%
+    summarise(Counties = paste(unique(ProjectCountyServed), collapse = ", ")) %>%
+    ungroup() %>%
+    unique() %>%
+    select(
+      "Organization" = OrgLink,
+      Address,
+      "Hours" = ProjectHours,
+      "Phone" = ProjectTelNo,
+      "County/-ies Served" = Counties
+    )
+  
+  datatable(AP_final,
+            rownames = FALSE,
+            options = list(dom = 'ltpi'),
+            escape = FALSE)
+  
+})
+
+output$AP_list_org <- renderDataTable({
+  AP_list <- APs %>%
+    filter(OrganizationName %in% c(input$ap_by_org)) %>%    
+    select(ProjectID) %>% unique()
+  
+  AP_final <- APs %>%
+    right_join(AP_list, by = "ProjectID") %>%
+    mutate(Address = if_else(!is.na(CoCCode),
+                             paste(Addresses, City, sep = '</br>'),
+                             "Please call- address not available.")) %>%
+    group_by(OrgLink,
+             Address,
+             ProjectHours,
+             ProjectTelNo) %>%
+    summarise(Counties = paste(unique(ProjectCountyServed), collapse = ", "),
+              Regions = paste(unique(ProjectAreaServed), collapse = ",</br>")) %>%
+    ungroup() %>%
+    unique() %>%
+    select(
+      "Organization" = OrgLink,
+      Address,
+      "Hours" = ProjectHours,
+      "Phone" = ProjectTelNo,
+      "County/-ies Served" = Counties,
+      "Service Area(s)" = Regions
+    )
+  
+  datatable(AP_final,
+            rownames = FALSE,
+            options = list(dom = 'ltpi'),
+            escape = FALSE)
+  
+})   
 output$covidPrioritization <- renderPlot({
   get_res_prior <- validation %>%
     select(PersonalID, EntryDate, ExitDate, LivingSituation) %>%
