@@ -27,9 +27,8 @@
         menuItem("Covid-19 Analysis",
                  tabName = "covid19Tab"),
         menuItem("Bed and Unit Utilization",
-                      tabName = "utilizationTab"),
-        menuItem(
-          "Quarterly Performance Report",
+                 tabName = "utilizationTab"),
+        menuItem("Quarterly Performance Report",
           menuSubItem("System Performance Measures",
                       tabName = "SPMs"),
           menuSubItem("Community Need (by County)",
@@ -101,7 +100,7 @@
                        dataTableOutput("AP_list_county")
                        ))
                      ),
-            tabPanel("By Homeless Planning Region", 
+            tabPanel("By Service Area", 
                      fluidRow(box(pickerInput(
                        inputId = "ap_by_region",
                        label = "Select Service Area",
@@ -116,18 +115,20 @@
                        dataTableOutput("AP_list_region"))
                      )),
             tabPanel("By Organization", 
-                     fluidRow(box(pickerInput(
-                       inputId = "ap_by_org",
-                       label = "Select Organization",
-                       selected = NULL,
-                       options = pickerOptions(dropupAuto = FALSE,
-                                               actionsBox = TRUE),
-                       multiple = TRUE,
-                       choices = APs %>% 
-                         arrange(OrganizationName) %>%
-                         pull(OrganizationName) %>% 
-                         unique()
-                     ))),
+                     fluidRow(box(
+                       pickerInput(
+                         inputId = "ap_by_org",
+                         label = "Select Organization",
+                         selected = NULL,
+                         options = pickerOptions(dropupAuto = FALSE,
+                                                 actionsBox = TRUE),
+                         multiple = TRUE,
+                         choices = APs %>%
+                           arrange(ProjectAKA) %>%
+                           pull(ProjectAKA) %>%
+                           unique()
+                       )
+                     )), 
                      fluidRow(box(
                        title = "Coordinated Entry Access Points",
                        width = 12,
